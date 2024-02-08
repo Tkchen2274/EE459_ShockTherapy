@@ -1,5 +1,5 @@
 DEVICE     = atmega328p
-CLOCK      = 9830400
+CLOCK      = 16000000
 PROGRAMMER = -c usbtiny -P usb
 OBJECTS    = main.o touch_detection.o
 FUSES      = -U hfuse:w:0xd9:m -U lfuse:w:0xe0:m
