@@ -8,12 +8,14 @@
 
 #include <avr/io.h>
 #include <util/delay.h>
-#include <touch_detection.h>
+#include "touch_detection.h"
 
 int main(void)
 {
-	DDRC |= 1 << 0;          // Set PORTC bit 0 for output
-	DDRB |= 1 << 1;
+	touch_pwm_init();
+	DDRC |= 1 << 0;		// Set PC0 as output (red LED)
+	DDRB |= 1 << 1;		// Set PB1 as output
+	TCCR2B |= (0b001 << CS20);	// No prescalar
 	while (1) {
 		if(touched != 0){	// Flag for touch detection
 			PORTB |= 1 << 0;	// for testing purposes, lights up LED
