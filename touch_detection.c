@@ -20,7 +20,7 @@ void analog_timer_init(void){  // timer for polling analog flag
 	TIMSK0 |= (1 << OCIE0A);	// enable interrupts
 	
 	//for generating interrupts
-	ACSR |= (1 << ACIE);	//enabling analong interrupts
+	ACSR |= (1 << ACIE);	//enabling analog interrupts
 
 }
 
