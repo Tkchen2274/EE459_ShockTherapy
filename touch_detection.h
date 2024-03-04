@@ -1,4 +1,6 @@
 extern volatile char touched; //flag for detecting if handle is touched
-//touch_pwm_init();
+
+void touch_pwm_init(void);
+void analog_timer_init(void);
 
 
