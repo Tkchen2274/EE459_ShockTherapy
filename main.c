@@ -15,6 +15,8 @@
 #include "i2c.h"
 #include "lcd.h"
 
+#include <util/delay.h> /* DELETE ME ONCE DONE DEBUGGIN */
+
 unsigned char status;
 
 int main(void)
@@ -34,8 +36,10 @@ int main(void)
 		else{
 			PORTB &= ~(1 << 0);	// Turn off the LED when no longer touching
 		}		
-		clear_screen();
 		write_char(0x38);
+		_delay_ms(500);
+		clear_screen();
+		_delay_ms(500);
 	}
 	return 0;   /* never reached */
 }

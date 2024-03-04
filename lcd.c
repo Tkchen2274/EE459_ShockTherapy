@@ -8,5 +8,5 @@ void clear_screen(void){ // function to clear LCD screen
 
 void write_char(unsigned char character) {
 	unsigned char data[1] = {character}; //create array for storing singular character
-	unsigned char status = i2c_io(LCD_ADDR, character, 1, NULL, 0); //send it over i2c
+	unsigned char status = i2c_io(LCD_ADDR, data, 1, NULL, 0); //send it over i2c
 };
