@@ -151,7 +151,8 @@ void loop()
 {
   if (Serial.available() > 0)
   {
-    byte command = Serial.read();
+    // byte command = Serial.read();
+    uint8_t command = Serial.read();
     switch(command)
     {
       case 'p':
