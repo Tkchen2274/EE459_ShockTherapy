@@ -30,8 +30,8 @@ int main(void)
 	TCCR2B |= (0b001 << CS20);	// No prescalar
 	i2c_init(BDIV);
 
-  audioInit();
-  playTrack(0);
+  // audioInit();
+  // playTrack(0);
   
 
 	while (1){
