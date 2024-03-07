@@ -30,9 +30,7 @@ int main(void)
 	TCCR2B |= (0b001 << CS20);	// No prescalar
 	i2c_init(BDIV);
 
-  audioInit();
-  playTrack(0);
-  
+	play_track(2);
 
 	while (1){
 		if(touched){
@@ -41,10 +39,11 @@ int main(void)
 		else{
 			PORTB &= ~(1 << 0);	// Turn off the LED when no longer touching
 		}		
-		write_char(0x38);
-		_delay_ms(500);
-		clear_screen();
-		_delay_ms(500);
+		//write_char(0x38);
+		play_pause();
+		//skip_track();
+		_delay_ms(1000);
+		//clear_screen();
 	}
 	return 0;   /* never reached */
 }

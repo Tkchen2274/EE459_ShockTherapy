@@ -1,114 +1,34 @@
-//-----------------------------------------------------------------------------
+#define PLAY_PAUSE 2
+#define NEXT 3
+#include "audio.h"
+#include <stddef.h>
 #include <avr/io.h>
 #include <util/delay.h>
-#include <stdint.h>
-#include "audio.h"
 
-void digitalWrite(uint8_t pin, uint8_t mode){ 
-  
-  if(mode == HIGH)
-    PORTD |= (1 << pin);
-  else if(mode == LOW) {
-    PORTD &= ~(1 << pin);
-  }
+unsigned char num_tracks = 6; // UPDATEME with the current number of tracks present on the SD card
+unsigned char current_track = 6; //starts with last track
 
+void play_pause(void){
+	DDRD |= (1<<PLAY_PAUSE);	// Pull ADKEY1 down
+	PORTD &= ~(1<<PLAY_PAUSE);
+	_delay_ms(20);			//Short press for play/pause, 20ms is like the minimum
+	DDRD &= ~(1<<PLAY_PAUSE);	//Switch to input again for not pressed
 }
 
-void pinMode(uint8_t pin, uint8_t mode) {
-  if (mode == OUTPUT) {
-    // Set pin as output (set the corresponding bit in DDRB to 1)
-    DDRD |= (1 << pin);
-  } else if (mode == INPUT) {
-    // Set pin as input (clear the corresponding bit in DDRB to 0)
-    DDRD &= ~(1 << pin);
-  }
+void skip_track(void){
+	DDRD |= (1<<NEXT);	// Pull ADKEY1 down
+	PORTD &= ~(1<<NEXT);
+	_delay_ms(20);		//Short press for skipping track 20ms is like the minimum
+	DDRD &= ~(1<<NEXT);	//Switch to input again for not pressed
 }
 
-int digitalRead(uint8_t pin){
-  if(PIND & (1 << pin)){
-    return 1;
-  }
-  else {
-    return 0;
-  }
-  
+void play_track(unsigned char track){
+	while(track != current_track){
+		skip_track();
+		_delay_ms(2000);
+		current_track++;
+		if(current_track > num_tracks){
+			current_track = 1;
+		}
+	}
 }
-
-void audioInit()
-{  
-  pinMode(DOUT, OUTPUT);
-  digitalWrite(DOUT, HIGH);
-  pinMode(DCLK, OUTPUT);
-  digitalWrite(DOUT, HIGH);
-
-}
-
-void sendCommand(unsigned int command)
-{
-  digitalWrite(DCLK, LOW);
-  // delayMicroseconds(1900);
-  _delay_us(1900);
-  for(uint8_t i = 0; i < 16; i++)
-  // for (byte i = 0; i < 16; i++)
-  {
-    // delayMicroseconds(100);
-    _delay_us(100);
-    digitalWrite(DCLK, LOW);
-    digitalWrite(DOUT, LOW);
-    if ((command & 0x8000) != 0)
-    {
-      digitalWrite(DOUT, HIGH);
-    }
-    // delayMicroseconds(100);
-    _delay_us(100);
-    digitalWrite(DCLK, HIGH);
-    command = command<<1;
-  }
-}
-
-/*
- * First sends the file that needs to be played
- * then it sends the play command
- * might need to handle when the trackNo 
- * does not exsit 
- */
-
-void playTrack(unsigned int trackNo){
-  sendCommand(trackNo);
-  sendCommand(OPCODE_PLAY_PAUSE);
-}
-
-// void Stop(){
-//   sendCommand(OPCODE_STOP);
-// }
-
-/*
- * The volume range is 0xFFF0 to 0xFFF7
- * OPCODE_VOL_SET is set to 0xFFF then is 
- * concatenated with the number you input
- */
-void VolumeSet(unsigned int vol){
-
-  if (vol < 8){
-    sendCommand(OPCODE_VOL_SET << 4 | vol);
-    
-  }
-
-}
-
-/* 
- * Main loop
- */
-/*
-int main(void) 
-{
-  audioInit();
-  playTrack(1);
-  while(1){
-    int a = 1;
-  
-  }
-  
-}
-*/
-
