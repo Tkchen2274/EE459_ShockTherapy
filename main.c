@@ -29,8 +29,7 @@ int main(void)
 	DDRB |= 1 << 0;		// Set PB1 as output
 	TCCR2B |= (0b001 << CS20);	// No prescalar
 	i2c_init(BDIV);
-
-	play_track(2);
+	
 
 	while (1){
 		if(touched){
