@@ -5,8 +5,8 @@
 #include <avr/io.h>
 #include <util/delay.h>
 
-unsigned char num_tracks = 6; // UPDATEME with the current number of tracks present on the SD card
-unsigned char current_track = 6; //starts with last track
+unsigned char num_tracks = 5; // UPDATEME with the current number of tracks present on the SD card
+unsigned char current_track = 5; //UPADTE ME starts with last track
 
 void play_pause(void){
 	DDRD |= (1<<PLAY_PAUSE);	// Pull ADKEY1 down
@@ -25,10 +25,10 @@ void skip_track(void){
 void play_track(unsigned char track){
 	while(track != current_track){
 		skip_track();
-		_delay_ms(2000);
-		current_track++;
-		if(current_track > num_tracks){
-			current_track = 1;
+		_delay_ms(3000);		// min delay for skip to register
+		current_track--;	// the internal pointer moves backwards from the newest added track towards the oldest
+		if(current_track < 1){
+			current_track = num_tracks;
 		}
 	}
 }

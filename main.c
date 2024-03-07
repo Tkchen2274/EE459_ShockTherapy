@@ -16,8 +16,6 @@
 #include "lcd.h"
 #include "audio.h"
 
-// #include <util/delay.h> /* DELETE ME ONCE DONE DEBUGGIN */
-
 unsigned char status;
 
 int main(void)
@@ -29,7 +27,8 @@ int main(void)
 	DDRB |= 1 << 0;		// Set PB1 as output
 	TCCR2B |= (0b001 << CS20);	// No prescalar
 	i2c_init(BDIV);
-	
+	play_track(3);
+	_delay_ms(1000);
 
 	while (1){
 		if(touched){
