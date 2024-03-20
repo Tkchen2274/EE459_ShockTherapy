@@ -19,13 +19,13 @@ void skip_track(void){
 	DDRD |= (1<<NEXT);	// Pull ADKEY1 down
 	PORTD &= ~(1<<NEXT);
 	_delay_ms(20);		//Short press for skipping track 20ms is like the minimum
-	DDRD &= ~(1<<NEXT);	//Switch to input again for not pressed
+	DDRD &= ~(1<<NEXT);	//Switch to input again for not pressed	
 }
 
 void play_track(unsigned char track){
 	while(track != current_track){
 		skip_track();
-		_delay_ms(3000);		// min delay for skip to register
+		_delay_ms(30);		// min delay for skip to register
 		current_track--;	// the internal pointer moves backwards from the newest added track towards the oldest
 		if(current_track < 1){
 			current_track = num_tracks;

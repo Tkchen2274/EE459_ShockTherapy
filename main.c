@@ -25,10 +25,12 @@ int main(void)
 	sei();			//enables interrupts
 	DDRC |= 1 << 0;		// Set PC0 as output (red LED)
 	DDRB |= 1 << 0;		// Set PB1 as output
+	DDRC |= 1 << 2;		// Shocker output
 	TCCR2B |= (0b001 << CS20);	// No prescalar
 	i2c_init(BDIV);
-	play_track(3);
-	_delay_ms(1000);
+	_delay_ms(1000);	// Needs a delay so that the audio module can boot up
+	play_track(5);
+	_delay_ms(1000);	// Delay to hear the sound that has been skipped to
 
 	while (1){
 		if(touched){
@@ -39,7 +41,7 @@ int main(void)
 		}		
 		//write_char(0x38);
 		play_pause();
-		//skip_track();
+		PORTC ^= 1 << 2;	// toggle shock	
 		_delay_ms(1000);
 		//clear_screen();
 	}
