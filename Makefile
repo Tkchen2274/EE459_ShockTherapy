@@ -1,7 +1,7 @@
 DEVICE     = atmega328p
 CLOCK      = 16000000
 PROGRAMMER = -c usbtiny -P usb
-OBJECTS    = main.o touch_detection.o i2c.o lcd.o audio.o
+OBJECTS    = main.o touch_detection.o i2c.o lcd.o audio.o rfid.o keypad.o
 FUSES      = -U hfuse:w:0xd9:m -U lfuse:w:0xe0:m
 
 # Fuse Low Byte = 0xe0   Fuse High Byte = 0xd9   Fuse Extended Byte = 0xff
@@ -28,12 +28,14 @@ COMPILE = avr-gcc -Wall -Os -DF_CPU=$(CLOCK) -mmcu=$(DEVICE)
 # symbolic targets:
 all:	main.hex
 
-main.o: main.c touch_detection.h i2c.h lcd.h audio.h
+main.o: main.c touch_detection.h i2c.h lcd.h audio.h rfid.h
 touch_detection.o: touch_detection.c touch_detection.h
 lcd.o: lcd.c lcd.h i2c.h
 i2c.o: i2c.c i2c.h
 audio.o: audio.c audio.h
 range_finder.o: range_finder.c range_finder.h
+rfid.o: rfid.c rfid.h
+keypad.o: keypad.c keypad.h
 
 .c.o:
 	$(COMPILE) -c $< -o $@

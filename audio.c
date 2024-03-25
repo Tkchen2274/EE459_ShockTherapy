@@ -23,12 +23,17 @@ void skip_track(void){
 }
 
 void play_track(unsigned char track){
-	while(track != current_track){
-		skip_track();
-		_delay_ms(30);		// min delay for skip to register
-		current_track--;	// the internal pointer moves backwards from the newest added track towards the oldest
-		if(current_track < 1){
-			current_track = num_tracks;
+	if(track == current_track){
+		play_pause();
+	}
+	else{
+		while(track != current_track){
+			skip_track();
+			_delay_ms(30);		// min delay for skip to register
+			current_track--;	// the internal pointer moves backwards from the newest added track towards the oldest
+			if(current_track < 1){
+				current_track = num_tracks;
+			}
 		}
 	}
 }

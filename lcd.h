@@ -1,2 +1,4 @@
 void clear_screen(void);
-void write_char(unsigned char);
+void lcd_stringout(unsigned char *);
+void lcd_moveto(unsigned char);
+void turn_on_cursor(void);
