@@ -1,3 +1,4 @@
+void lcd_init(void);
 void clear_screen(void);
 void lcd_stringout(unsigned char *);
 void lcd_moveto(unsigned char);

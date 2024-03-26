@@ -25,6 +25,7 @@ int main(void)
 	touch_pwm_init();	// Initializes pwm output (deprecated)
 	analog_timer_init();	// Initializes analog polling
 	spi_init();
+	lcd_init();
 	mfrc522_soft_reset();
 	sei();			//enables interrupts
 	
@@ -36,7 +37,7 @@ int main(void)
 	_delay_ms(1000);	// Needs a delay so that the audio module can boot up
 	play_track(4);
 	_delay_ms(1000);	// Delay to hear the sound that has been skipped to
-	lcd_moveto(2);
+	//lcd_moveto(2);
 	clear_screen();
 	_delay_ms(1);
 	turn_on_cursor();
@@ -59,15 +60,17 @@ int main(void)
 			PORTB &= ~(1 << 0);	// Turn off the LED when no longer touching
 		}
 		button = getButton();
-		
 		//play_pause();
 		PORTC ^= 1 << 2;	// toggle shock	
 		//lcd_moveto(1);
 		clear_screen();
-		_delay_ms(500);
-		lcd_stringout("bruh");
-		play_track(5);
-		_delay_ms(500);
+		_delay_ms(200);
+		//lcd_moveto(0x00);
+		char buf[4];
+		sprintf(buf, "%d", button);
+		lcd_stringout(buf);
+		play_track(5);	// bruh.mp3
+		_delay_ms(200);
 	}
 	return 0;   /* never reached */
 }
