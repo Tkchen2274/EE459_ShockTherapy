@@ -22,16 +22,19 @@ unsigned char status;
 
 int main(void)
 {
+	unsigned char count = 0; // used for counting # of fifo reads
+
 	touch_pwm_init();	// Initializes pwm output (deprecated)
 	analog_timer_init();	// Initializes analog polling
 	spi_init();
 	lcd_init();
+	adc_init();	// init adc for keypad
 	mfrc522_soft_reset();
 	sei();			//enables interrupts
 	
 	DDRC |= 1 << 0;		// Set PC0 as output (red LED)
 	DDRB |= 1 << 0;		// Set PB1 as output
-	DDRC |= 1 << 2;		// Shocker output
+	DDRD |= 1 << 5;		// Shocker output
 	TCCR2B |= (0b001 << CS20);	// No prescalar
 	i2c_init(BDIV);
 	_delay_ms(1000);	// Needs a delay so that the audio module can boot up
@@ -50,6 +53,10 @@ int main(void)
 	//mfrc522_configure_sensitivity(2);   // Set sensitivity level (example: level = 2)
 	
 	unsigned char button;
+	unsigned char col1;
+	unsigned char col2;
+	unsigned char col3;
+	_delay_ms(1);
 
 	while (1){
 		mfrc522_test();
@@ -59,15 +66,20 @@ int main(void)
 		else{
 			PORTB &= ~(1 << 0);	// Turn off the LED when no longer touching
 		}
-		button = getButton();
+		col1 = adc_sample(1);
+		col2 = adc_sample(2);
+		col3 = adc_sample(3);
+
+		//button = getButton();
+		count++;
 		//play_pause();
-		PORTC ^= 1 << 2;	// toggle shock	
+		PORTD ^= 1 << 5;	// toggle shock	
 		//lcd_moveto(1);
-		clear_screen();
-		_delay_ms(200);
-		//lcd_moveto(0x00);
-		char buf[4];
-		sprintf(buf, "%d", button);
+		//clear_screen();
+		//_delay_ms(200);
+		lcd_moveto(0x00);
+		char buf[13];
+		sprintf(buf, "%3d %3d %3d", col1, col2, col3);
 		lcd_stringout(buf);
 		play_track(5);	// bruh.mp3
 		_delay_ms(200);
