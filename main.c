@@ -17,6 +17,7 @@
 #include "audio.h"
 #include "rfid.h"
 #include "keypad.h"
+#include "servo.h"
 
 unsigned char status;
 
@@ -69,10 +70,12 @@ int main(void)
 		if(touched){
 			PORTC |= 1 << 0;	// indicate on red LED
 			PORTD |= 1 << 5;	// administer shock
+			OCR1A = 3000;
 		}
 		else{ 
 			PORTC &= ~(1 << 0);	// Turn off the LED when no longer touching
 			PORTD &= ~(1 << 5);	// relieve shock
+			OCR1A = 0;
 		}
 
 		col1 = adc_sample(1);	// sample each keypad column
