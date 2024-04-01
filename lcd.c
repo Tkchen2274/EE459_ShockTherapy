@@ -19,7 +19,7 @@ void clear_screen(void){ // function to clear LCD screen
 };
 
 void lcd_stringout(const char *string) {
-	unsigned char data[10];	// Can only print 10 characters at a time
+	unsigned char data[20];	// Can only print 20 characters at a time
 	data[0] = 0x40;	//indicator for data
 	int i = 1;
 	while(*string && i<sizeof(data)){	//fill data array until you run out of data or you max the buffer

@@ -23,6 +23,7 @@ unsigned char status;
 int main(void)
 {
 	unsigned char count = 0; // used for counting # of fifo reads
+	unsigned char button_handled = 0;	// flag for keeping track of button presses
 
 	touch_pwm_init();	// Initializes pwm output (deprecated)
 	analog_timer_init();	// Initializes analog polling
@@ -43,6 +44,7 @@ int main(void)
 	//lcd_moveto(2);
 	clear_screen();
 	_delay_ms(1);
+	lcd_stringout("Enter password:");
 	turn_on_cursor();
 	//write_char('b');
 
@@ -59,30 +61,41 @@ int main(void)
 	_delay_ms(1);
 
 	while (1){
-		mfrc522_test();
+		//mfrc522_test();
 		if(touched){
 			PORTB |= 1 << 0;	//touched
 		}
 		else{
 			PORTB &= ~(1 << 0);	// Turn off the LED when no longer touching
 		}
-		col1 = adc_sample(1);
+
+		col1 = adc_sample(1);	// sample each keypad column
 		col2 = adc_sample(2);
 		col3 = adc_sample(3);
-
+		
+		if(col1 | col2 | col3){ // If a button is pressed, the adc result will be non-zero
+			if(!button_handled){	// If we haven't handled it already
+				lcd_moveto(20+count);	// 3rd row
+				lcd_stringout("a");
+				button_handled = 1;
+				count++;
+			}
+		}
+		else if (button_handled){	// If the buttons have been released, reset the flag
+			button_handled = 0;
+		}
 		//button = getButton();
-		count++;
 		//play_pause();
-		PORTD ^= 1 << 5;	// toggle shock	
+		//PORTD ^= 1 << 5;	// toggle shock	
 		//lcd_moveto(1);
 		//clear_screen();
 		//_delay_ms(200);
-		lcd_moveto(0x00);
+		lcd_moveto(64);	// row 2
 		char buf[13];
 		sprintf(buf, "%3d %3d %3d", col1, col2, col3);
 		lcd_stringout(buf);
-		play_track(5);	// bruh.mp3
-		_delay_ms(200);
+		//play_track(5);	// bruh.mp3
+		//_delay_ms(200);
 	}
 	return 0;   /* never reached */
 }

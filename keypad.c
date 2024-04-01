@@ -13,7 +13,7 @@
 void adc_init(void)
 {
     // Initialize the ADC
-    ADMUX |= (1 << REFS0);   // Set the REFS bits
+    ADMUX |= (1 << REFS0);   // Set ref to AVCC
     ADMUX |= (1 << ADLAR);      // Left adjust the output
     ADCSRA |= (ADC_PRSC << ADPS0);  // Set the prescalar bits
     ADCSRA |= (1 << ADEN);      // Enable the ADC
