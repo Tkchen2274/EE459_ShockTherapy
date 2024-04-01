@@ -23,6 +23,7 @@ unsigned char status;
 int main(void)
 {
 	unsigned char count = 0; // used for counting # of fifo reads
+	unsigned int loop_count = 0;	//used for counting loop iterations
 	unsigned char button_handled = 0;	// flag for keeping track of button presses
 
 	touch_pwm_init();	// Initializes pwm output (deprecated)
@@ -62,11 +63,16 @@ int main(void)
 
 	while (1){
 		//mfrc522_test();
-		if(touched){
-			PORTB |= 1 << 0;	//touched
+		if((loop_count % 100)==0){	// every 2s
+			play_pause();
 		}
-		else{
-			PORTB &= ~(1 << 0);	// Turn off the LED when no longer touching
+		if(touched){
+			PORTC |= 1 << 0;	// indicate on red LED
+			PORTD |= 1 << 5;	// administer shock
+		}
+		else{ 
+			PORTC &= ~(1 << 0);	// Turn off the LED when no longer touching
+			PORTD &= ~(1 << 5);	// relieve shock
 		}
 
 		col1 = adc_sample(1);	// sample each keypad column
@@ -75,10 +81,65 @@ int main(void)
 		
 		if(col1 | col2 | col3){ // If a button is pressed, the adc result will be non-zero
 			if(!button_handled){	// If we haven't handled it already
-				lcd_moveto(20+count);	// 3rd row
-				lcd_stringout("a");
+				lcd_moveto(20+count);	// prepare cursor on 3rd row	
+				if(col1){
+					switch(col1){
+						case 83:
+						case 84:
+							lcd_stringout("1");
+							count++;
+							break;
+						case 128:
+							lcd_stringout("4");
+							count++;
+							break;
+						case 169:
+						case 170:
+							lcd_stringout("7");
+							count++;
+							break;
+					}
+				}
+				if(col2){
+					switch(col2){
+						case 83:
+						case 84:
+							lcd_stringout("2");
+							count++;
+							break;
+						case 128:
+							lcd_stringout("5");
+							count++;
+							break;
+						case 169:
+							lcd_stringout("8");
+							count++;
+							break;
+						case 231:
+							lcd_stringout("0");
+							count++;
+							break;
+					}
+				}
+				if(col3){
+					switch(col3){
+						case 83:
+						case 84:
+							lcd_stringout("3");
+							count++;
+							break;
+						case 128:
+							lcd_stringout("6");
+							count++;
+							break;
+						case 169:
+						case 170:
+							lcd_stringout("9");
+							count++;
+							break;
+					}
+				}
 				button_handled = 1;
-				count++;
 			}
 		}
 		else if (button_handled){	// If the buttons have been released, reset the flag
@@ -91,11 +152,12 @@ int main(void)
 		//clear_screen();
 		//_delay_ms(200);
 		lcd_moveto(64);	// row 2
-		char buf[13];
-		sprintf(buf, "%3d %3d %3d", col1, col2, col3);
+		char buf[16];
+		sprintf(buf, "%3d %3d %3d t:%1d", col1, col2, col3, touched);
 		lcd_stringout(buf);
 		//play_track(5);	// bruh.mp3
-		//_delay_ms(200);
+		_delay_ms(5);
+		loop_count++;
 	}
 	return 0;   /* never reached */
 }
