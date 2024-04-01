@@ -1,7 +1,7 @@
 #include <avr/io.h>
 #include <util/delay.h>
 
-void initPWM() {
+void servo_init(void) {
     // Clear on compare match, set at BOTTOM (non-inverting mode)
     // Fast PWM mode with ICR1 as top
     TCCR1A |= (1 << WGM11) | (1 << COM1A1);

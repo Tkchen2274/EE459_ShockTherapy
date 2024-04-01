@@ -1,1 +1,1 @@
-void initPWM(void)
+void servo_init(void);

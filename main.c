@@ -28,8 +28,8 @@ int main(void)
 	unsigned char button_handled = 0;	// flag for keeping track of button presses
 	unsigned char touch_handled = 0; 	// flag for keeping track of detected touches
 						//
-	touch_pwm_init();	// Initializes pwm output (deprecated)
 	analog_timer_init();	// Initializes analog polling
+	servo_init();
 	spi_init();
 	lcd_init();
 	adc_init();	// init adc for keypad
@@ -68,13 +68,13 @@ int main(void)
 			PORTD |= 1 << 5;	// administer shock
 			play_pause();
 			touch_handled=1;	// this is to ensure the sound is only played once per touch
-			OCR1A = 3000;
+			OCR1A = 1600;	// unlocked
 		}
 		else if(!touched){ 
 			PORTC &= ~(1 << 0);	// Turn off the LED when no longer touching
 			PORTD &= ~(1 << 5);	// relieve shock
 			touch_handled = 0;
-			OCR1A = 0;
+			OCR1A = 1000;	// locked
 		}
 
 		col1 = adc_sample(1);	// sample each keypad column
