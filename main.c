@@ -25,7 +25,8 @@ int main(void)
 	unsigned char count = 0; // used for counting # of fifo reads
 	unsigned int loop_count = 0;	//used for counting loop iterations
 	unsigned char button_handled = 0;	// flag for keeping track of button presses
-
+	unsigned char touch_handled = 0; 	// flag for keeping track of detected touches
+						//
 	touch_pwm_init();	// Initializes pwm output (deprecated)
 	analog_timer_init();	// Initializes analog polling
 	spi_init();
@@ -39,10 +40,8 @@ int main(void)
 	DDRD |= 1 << 5;		// Shocker output
 	TCCR2B |= (0b001 << CS20);	// No prescalar
 	i2c_init(BDIV);
-	_delay_ms(1000);	// Needs a delay so that the audio module can boot up
-	play_track(4);
-	_delay_ms(1000);	// Delay to hear the sound that has been skipped to
-	//lcd_moveto(2);
+	_delay_ms(100);	// Needs a delay so that the audio module can boot up
+	play_track(5);
 	clear_screen();
 	_delay_ms(1);
 	lcd_stringout("Enter password:");
@@ -62,17 +61,17 @@ int main(void)
 	_delay_ms(1);
 
 	while (1){
-		//mfrc522_test();
-		if((loop_count % 100)==0){	// every 2s
-			play_pause();
-		}
-		if(touched){
+		//mfrc522_test();	
+		if(touched && !touch_handled){
 			PORTC |= 1 << 0;	// indicate on red LED
 			PORTD |= 1 << 5;	// administer shock
+			play_pause();
+			touch_handled=1;	// this is to ensure the sound is only played once per touch
 		}
-		else{ 
+		else if(!touched){ 
 			PORTC &= ~(1 << 0);	// Turn off the LED when no longer touching
 			PORTD &= ~(1 << 5);	// relieve shock
+			touch_handled = 0;
 		}
 
 		col1 = adc_sample(1);	// sample each keypad column
@@ -115,6 +114,7 @@ int main(void)
 							lcd_stringout("8");
 							count++;
 							break;
+						case 230:
 						case 231:
 							lcd_stringout("0");
 							count++;
@@ -145,17 +145,10 @@ int main(void)
 		else if (button_handled){	// If the buttons have been released, reset the flag
 			button_handled = 0;
 		}
-		//button = getButton();
-		//play_pause();
-		//PORTD ^= 1 << 5;	// toggle shock	
-		//lcd_moveto(1);
-		//clear_screen();
-		//_delay_ms(200);
 		lcd_moveto(64);	// row 2
 		char buf[16];
 		sprintf(buf, "%3d %3d %3d t:%1d", col1, col2, col3, touched);
 		lcd_stringout(buf);
-		//play_track(5);	// bruh.mp3
 		_delay_ms(5);
 		loop_count++;
 	}

@@ -16,7 +16,7 @@ void touch_pwm_init(void){ 	// output is on PB3
 void analog_timer_init(void){  // timer for polling analog flag
 	// for polling
 	TCCR0A |= (0b10 << WGM00);	// CTC mode
-	TCCR0B |= (0b101 << CS00);	// prescalar 1024
+	TCCR0B |= (0b011 << CS00);	// prescalar 64
 	TIMSK0 |= (1 << OCIE0A);	// enable interrupts
 	
 	//for generating interrupts
