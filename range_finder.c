@@ -9,4 +9,23 @@ void rangefinder_init(){
 	OCR2A = 189	// prescalar 1024 -> triggers if range >200 cm (us/58)=cm
 }
 
-ISR{
+ISR(PCINT6_vect){	// triggered when echo signal changes
+	unsigned char rout = PINB & (1 << PB6);
+	if(rout){	// measurement has begun
+		TCNT2 = 0;	// reset counter
+		TCCR2B |= (0b111 << CS20);	// Prescalar 1024
+		got_time = 0;	// time is not valid
+	}
+	else{	// measurement has concluded
+		TCCR2B &= ~(0b111 << CS20);	// Stop counter
+		got_time = 1;	// time is valid
+		range_count = TCNT2;	// load count value
+	}
+}
+
+ISR(TIMER2_COMPA_vect){	// triggered when max distance is exceeded
+	TCCR2B &= ~(0b111 << CS20);	// stop counter
+	got_time = 1;	// time is valid (out of range)
+	range_count = 0;	// reset counter
+}
+

@@ -148,6 +148,9 @@ int main(void)
 		else if (button_handled){	// If the buttons have been released, reset the flag
 			button_handled = 0;
 		}
+		
+		
+		
 		lcd_moveto(64);	// row 2
 		char buf[16];
 		sprintf(buf, "%3d %3d %3d t:%1d", col1, col2, col3, touched);
