@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Upload File</title>
+</head>
+<body>
+    <h2>Upload Your Face</h2>
+    <form action="/upload" method="POST" enctype="multipart/form-data">
+        <input type="file" name="file" accept=".png, .jpg, .jpeg">
+        <input type="submit" value="Upload">
+    </form>
+    <hr>
+    <h2>Unauthorize Users!</h2>
+    <div>
+        {% for image in images %}
+            <img src="{{ image }}" width="200">
+        {% endfor %}
+    </div>
+    <h2>Select Items</h2>
+    <form action="/handle_selection" method="post">
+        <input type="checkbox" name="items" value="item1"> Face ID<br>
+        <input type="checkbox" name="items" value="item2"> aye <br>
+        <input type="checkbox" name="items" value="item3"> Item 3<br>
+        <!-- Add more checkboxes as needed -->
+        <input type="submit" value="Submit">
+    </form>
+    <form action="/change_pass" method="post">
+        <label for="target_ip">Target IP:</label><br>
+        <input type="text" id="target_ip" name="target_ip" required><br>
+        <label for="command">Command:</label><br>
+        <input type="text" id="command" name="command" required><br><br>
+	<label for="password">Password:</label><br>
+        <input type="text" id="password" name="password" required><br><br>
+
+        <input type="submit" value="Submit Command">
+    </form>
+</body>
+</html>
+
