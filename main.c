@@ -83,7 +83,7 @@ int main(void)
 						case 84:
 							lcd_stringout("1");
 							count++;
-							uart_transmit(0x01);
+							uart_transmit(0x01);	// FIX ME LATER, packet that requests a face detection result
 							break;
 						case 128:
 							lcd_stringout("4");
@@ -102,6 +102,7 @@ int main(void)
 						case 84:
 							lcd_stringout("2");
 							count++;
+							uart_transmit(0x02);	// FIX ME LATER, packet that requests a finger result
 							break;
 						case 128:
 							lcd_stringout("5");
@@ -142,7 +143,7 @@ int main(void)
 		else if (button_handled){	// If the buttons have been released, reset the flag
 			button_handled = 0;
 		}
-		if(name_done){
+		if(name_done){	// face regonition result received
 				if(facebuf[0] == '\0'){
 						lcd_moveto(84);
 						lcd_stringout("invalid face");
@@ -154,6 +155,17 @@ int main(void)
 						lcd_stringout(facebuf);
 						name_done = 0;
 				}
+		}
+		if(finger_done){
+				if(finger_done == 1){	// valid finger
+						lcd_moveto(94);
+						lcd_stringout("f: valid");
+				}
+				else if(finger_done == 2){	// invalid finger
+						lcd_moveto(94);
+						lcd_stringout("f: invalid");
+				}
+				finger_done = 0;
 		}
 		
 		
