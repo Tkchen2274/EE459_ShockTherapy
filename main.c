@@ -50,8 +50,8 @@ int main(void)
 	TCCR2B |= (0b001 << CS20);	// No prescalar
 	i2c_init(BDIV);
 	_delay_ms(100);	// Needs a delay so that the audio module can boot up
-	play_track(5);
 	clear_screen();
+	play_track(1);
 	_delay_ms(1);
 	lcd_stringout("Enter password:");
 	turn_on_cursor();
@@ -78,13 +78,14 @@ int main(void)
 			OCR1A = 1000;	// locked
 		}
 
-		if button_press(7){	//doorbell
-			play_track(5);
+		if(button_press(7)){	//doorbell
+				play_track(1);
 		}
 
-		if button_press(2){	//image capture
-			uart_transmit(0x01);
-			play_pause();
+		if(button_press(2)){	//image capture
+				play_track(2);
+				uart_transmit(0x01);	// request face recog
+				uart_transmit(0x02);	// request finger verf
 		}
 
 		col1 = adc_sample(1);	// sample each keypad column
@@ -100,7 +101,6 @@ int main(void)
 						case 84:
 							lcd_stringout("1");
 							count++;
-							//uart_transmit(0x01);	// FIX ME LATER, packet that requests a face detection result
 							break;
 						case 128:
 							lcd_stringout("4");
@@ -119,7 +119,6 @@ int main(void)
 						case 84:
 							lcd_stringout("2");
 							count++;
-							uart_transmit(0x02);	// FIX ME LATER, packet that requests a finger result
 							break;
 						case 128:
 							lcd_stringout("5");
@@ -163,24 +162,25 @@ int main(void)
 		if(name_done){	// face regonition result received
 				if(facebuf[0] == '\0'){
 						lcd_moveto(84);
-						lcd_stringout("invalid face");
+						lcd_stringout("face: wrong");
 				}
 				else{
 						lcd_moveto(84);
-						lcd_stringout("                 ");
+						lcd_stringout("               ");
 						lcd_moveto(84);	// row 4
+						lcd_stringout("face: ");
 						lcd_stringout(facebuf);
 						name_done = 0;
 				}
 		}
 		if(finger_done){
 				if(finger_done == 1){	// valid finger
-						lcd_moveto(94);
-						lcd_stringout("f: valid");
+						lcd_moveto(99);
+						lcd_stringout("fin:v");
 				}
 				else if(finger_done == 2){	// invalid finger
-						lcd_moveto(94);
-						lcd_stringout("f: invalid");
+						lcd_moveto(99);
+						lcd_stringout("fin:i");
 				}
 				finger_done = 0;
 		}
