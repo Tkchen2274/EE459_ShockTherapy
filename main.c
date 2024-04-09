@@ -78,6 +78,15 @@ int main(void)
 			OCR1A = 1000;	// locked
 		}
 
+		if button_press(7){	//doorbell
+			play_track(5);
+		}
+
+		if button_press(2){	//image capture
+			uart_transmit(0x01);
+			play_pause();
+		}
+
 		col1 = adc_sample(1);	// sample each keypad column
 		col2 = adc_sample(2);
 		col3 = adc_sample(3);
@@ -91,7 +100,7 @@ int main(void)
 						case 84:
 							lcd_stringout("1");
 							count++;
-							uart_transmit(0x01);	// FIX ME LATER, packet that requests a face detection result
+							//uart_transmit(0x01);	// FIX ME LATER, packet that requests a face detection result
 							break;
 						case 128:
 							lcd_stringout("4");
