@@ -21,6 +21,7 @@
 #include "uart.h"
 
 unsigned char status;
+char button_press(char);
 
 int main(void)
 {
@@ -175,11 +176,11 @@ int main(void)
 				finger_done = 0;
 		}
 		
-		if button_press(7){	//doorbell
+		if(button_press(7)){	//doorbell
 			play_pause();
 		}
 
-		if button_press(2){	//image capture
+		if(button_press(2)){	//image capture
 			play_pause();
 		}
 		
