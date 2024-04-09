@@ -15,9 +15,10 @@
 #include "i2c.h"
 #include "lcd.h"
 #include "audio.h"
-#include "rfid.h"
 #include "keypad.h"
 #include "servo.h"
+#include "rfid.h"
+#include "uart.h"
 
 unsigned char status;
 
@@ -30,10 +31,9 @@ int main(void)
 						//
 	analog_timer_init();	// Initializes analog polling
 	servo_init();
-	spi_init();
 	lcd_init();
 	adc_init();	// init adc for keypad
-	mfrc522_soft_reset();
+    uart_init();	// init serial connection with rpi
 	sei();			//enables interrupts
 	
 	DDRC |= 1 << 0;		// Set PC0 as output (red LED)
@@ -47,13 +47,7 @@ int main(void)
 	_delay_ms(1);
 	lcd_stringout("Enter password:");
 	turn_on_cursor();
-	//write_char('b');
 
-	// Configure RFID settings
-    	//mfrc522_configure_antenna_gain(3);  // Set antenna gain to maximum (example: gain = 3)
-    	//mfrc522_configure_agc(1);           // Enable AGC
-    	//mfrc522_configure_tx_ask(1);        // Enable TXASK
-	//mfrc522_configure_sensitivity(2);   // Set sensitivity level (example: level = 2)
 	
 	unsigned char button;
 	unsigned char col1;
@@ -62,7 +56,6 @@ int main(void)
 	_delay_ms(1);
 
 	while (1){
-		//mfrc522_test();	
 		if(touched && !touch_handled){
 			PORTC |= 1 << 0;	// indicate on red LED
 			PORTD |= 1 << 5;	// administer shock
@@ -90,6 +83,7 @@ int main(void)
 						case 84:
 							lcd_stringout("1");
 							count++;
+							uart_transmit(0x01);
 							break;
 						case 128:
 							lcd_stringout("4");
@@ -148,7 +142,19 @@ int main(void)
 		else if (button_handled){	// If the buttons have been released, reset the flag
 			button_handled = 0;
 		}
-		
+		if(name_done){
+				if(facebuf[0] == '\0'){
+						lcd_moveto(84);
+						lcd_stringout("invalid face");
+				}
+				else{
+						lcd_moveto(84);
+						lcd_stringout("                 ");
+						lcd_moveto(84);	// row 4
+						lcd_stringout(facebuf);
+						name_done = 0;
+				}
+		}
 		
 		
 		lcd_moveto(64);	// row 2
