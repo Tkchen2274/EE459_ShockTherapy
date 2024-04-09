@@ -36,6 +36,13 @@ int main(void)
     uart_init();	// init serial connection with rpi
 	sei();			//enables interrupts
 	
+	DDRB &= ~(1 << DDB7);	//Blue button as input
+    DDRB &= ~(1 << DDB2);	//Red button as input
+    
+    //Pull up resistor for buttons
+    PORTB |= (1 << PB7);
+    PORTB |= (1 << PB2);
+	
 	DDRC |= 1 << 0;		// Set PC0 as output (red LED)
 	DDRB |= 1 << 0;		// Set PB1 as output
 	DDRD |= 1 << 5;		// Shocker output
@@ -156,6 +163,13 @@ int main(void)
 				}
 		}
 		
+		if button_press(7){	//doorbell
+			play_pause();
+		}
+
+		if button_press(2){	//image capture
+			play_pause();
+		}
 		
 		lcd_moveto(64);	// row 2
 		char buf[16];
@@ -166,3 +180,19 @@ int main(void)
 	}
 	return 0;   /* never reached */
 }
+
+char button_press(char bit){	// Function to check for button press
+	if((PINB & (1 << bit)) == 0){
+		_delay_ms(1);
+		while((PINB & (1 << bit)) == 0){	
+			_delay_ms(1);
+			}
+		return 1;	
+		// While loop for debouncing
+		// 1 is returned only after button is no longer pressed
+		}
+	else{
+		return 0;
+		}
+	
+	}
