@@ -184,6 +184,17 @@ int main(void)
 				}
 				finger_done = 0;
 		}
+		if(rfid_done){	// rfid flag
+				if(rfid_done == 1){	// valid rfid
+						lcd_moveto(81);
+						lcd_stringout("r:v");
+				}
+				else if(rfid_done == 2){	// invalid rfid
+						lcd_moveto(81);
+						lcd_stringout("r:i");
+				}
+				rfid_done = 0;
+		}
 		
 		if(button_press(7)){	//doorbell
 			play_pause();
