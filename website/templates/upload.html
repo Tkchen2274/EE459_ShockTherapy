@@ -5,11 +5,16 @@
 </head>
 <body>
     <h2>Upload Your Face</h2>
-    <form action="/upload" method="POST" enctype="multipart/form-data">
-        <input type="file" name="file" accept=".png, .jpg, .jpeg">
-        <input type="submit" value="Upload">
-    </form>
-    <hr>
+     <form action="/upload" method="POST" enctype="multipart/form-data">
+    <label for="file">Select File:</label><br>
+    <input type="file" id="file" name="file" accept=".png, .jpg, .jpeg"><br>
+
+    <label for="filename">File Name:</label><br>
+    <input type="text" id="filename" name="filename" required><br>
+
+    <input type="submit" value="Upload">
+</form>
+   <hr>
     <h2>Unauthorize Users!</h2>
     <div>
         {% for image in images %}
@@ -18,22 +23,50 @@
     </div>
     <h2>Select Items</h2>
     <form action="/handle_selection" method="post">
-        <input type="checkbox" name="items" value="item1"> Face ID<br>
-        <input type="checkbox" name="items" value="item2"> aye <br>
-        <input type="checkbox" name="items" value="item3"> Item 3<br>
+        <input type="checkbox" name="items" value="fingerprint"> Add New Fingerprint<br>
         <!-- Add more checkboxes as needed -->
         <input type="submit" value="Submit">
     </form>
-    <form action="/change_pass" method="post">
-        <label for="target_ip">Target IP:</label><br>
-        <input type="text" id="target_ip" name="target_ip" required><br>
-        <label for="command">Command:</label><br>
-        <input type="text" id="command" name="command" required><br><br>
-	<label for="password">Password:</label><br>
-        <input type="text" id="password" name="password" required><br><br>
+ <form id="myForm" action="/change_pass" method="post" onsubmit="preprocessPassword()">
+    <label for="password">Password:</label><br>
+    <input type="text" id="password" name="password" required><br><br>
+    <button type="submit">Submit</button>
+</form>
 
-        <input type="submit" value="Submit Command">
-    </form>
+<script>
+function preprocessPassword() {
+    var passwordInput = document.getElementById("password");
+    var passwordValue = passwordInput.value;
+    var processedPassword = passwordValue.replace(/\s+/g, ''); // Remove spaces
+    
+    passwordInput.value = processedPassword; // Set the processed value back to the input field
+}
+        function formToJson() {
+            var formData = {
+                "target_ip": document.getElementById("target_ip").value,
+                "command": document.getElementById("command").value,
+                "password": document.getElementById("password").value
+            };
+            return JSON.stringify(formData);
+        }
+
+	function formSubmit() {
+            var jsonData = formToJson();
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "/change_pass");
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.onload = function () {
+                if (xhr.status === 200) {
+                    console.log("Success: " + xhr.responseText);
+                } else {
+                    console.error("Error: " + xhr.responseText);
+                }
+            };
+            xhr.send(jsonData);
+            return false; // Prevent default form submission
+        }
+	</script>
+
 </body>
 </html>
 
