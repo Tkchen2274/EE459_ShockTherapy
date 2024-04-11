@@ -14,6 +14,9 @@ volatile unsigned char finger_flag = 0;
 volatile unsigned char finger_done = 0;
 volatile unsigned char rfid_flag = 0;
 volatile unsigned char rfid_done = 0;
+volatile unsigned char touch_main_flag = 0;
+volatile unsigned char face_main_flag = 0;
+volatile unsigned char rfid_main_flag = 0;
 
 void uart_init() {
     // Set the baud rate
@@ -75,6 +78,7 @@ ISR(USART_RX_vect) {
 						name_done = 1;
 						face_flag = 0;
 						byte_count = 0;
+						face_main_flag = 1;
 				}
 				else{	// valid data
 						facebuf[byte_count-1] = received_data;
@@ -87,6 +91,8 @@ ISR(USART_RX_vect) {
 				}
 				else if(received_data == 1){	// valid finger
 						finger_done = 1;	// result done, and is valid.
+						face_flag = 1;
+						touch_main_flag = 1;
 				}
 				finger_flag = 0;
 				byte_count = 0;	// only one packet is received, so immediately terminate
@@ -95,8 +101,10 @@ ISR(USART_RX_vect) {
 				if(received_data == 0){	// invalid rfid
 						rfid_done = 2;	// result done, and is invalid.
 				}
-				else if(received_data == 1){	// valid finger
+				else if(received_data == 1){	// valid rfid
 						rfid_done = 1;	// result done, and is valid.
+						rfid_flag = 1;
+						rfid_main_flag = 1;
 				}
 				rfid_flag = 0;
 				byte_count = 0;	// only one packet is received, so immediately terminate
