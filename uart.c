@@ -18,6 +18,13 @@ volatile unsigned char touch_main_flag = 0;
 volatile unsigned char face_main_flag = 0;
 volatile unsigned char rfid_main_flag = 0;
 
+
+
+// flags for which authentications need to be activated
+volatile unsigned char enable_auth_flag = 0b0000;
+
+volatile unsigned int total_auth_flag = 0; //should be total of the authentication flags
+
 void uart_init() {
     // Set the baud rate
     UBRR0H = (BRC >> 8);

@@ -13,3 +13,5 @@ extern volatile unsigned char rfid_done;	// flag for notifying main loop that fa
 extern volatile unsigned char touch_main_flag;	// flag for notifying main loop that touch succeded
 extern volatile unsigned char face_main_flag;	// flag for notifying main loop that face succeded
 extern volatile unsigned char rfid_main_flag;	// flag for notifying main loop that rfid succeded
+extern volatile unsigned char enable_auth_flag;
+extern volatile unsigned int total_auth_flag;
