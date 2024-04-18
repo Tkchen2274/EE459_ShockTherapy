@@ -111,8 +111,8 @@ int main(void)
 		if(touched && !touch_handled){
 			PORTC |= 1 << 0;	// indicate on red LED
 			PORTD |= 1 << 5;	// administer shock. Disable after demo.
-			play_pause();		//change to siren sound and play for about 20 seconds
-			touch_handled=1;	// this is to ensure the sound is only played once per touch. maybe change this so sound keeps playing
+			// play_pause();	// change to siren sound and play for about 20 seconds
+			touch_handled = 1;	// this is to ensure the sound is only played once per touch. maybe change this so sound keeps playing
 			//OCR1A = 1600;	// unlocked
 		}
 		else if(!touched){ 
@@ -123,7 +123,7 @@ int main(void)
 		}
 
 		if((PINB & (1<<7))==0){	//doorbell button pressed
-				play_track(1);
+				play_track(1);	// ding dong
 				handle_button_press(7);
 				//uart_transmit(0x01);	// request face recog. this would be different because needs to show image to user on website
 		}
@@ -279,8 +279,8 @@ int main(void)
 				}
 				rfid_done = 0;
 		}
-		if(pir_detected && (lock_timeout > 200)){	// 5ms*200 = 1s timeout
-				play_track(4);	// hello there
+		if(pir_detected && (lock_timeout > 200)){	// 50ms*200 = 10s timeout
+				play_track(2);	// hello there
 				//lock_timeout = 0;
 				pir_detected = 0;
 
@@ -306,7 +306,7 @@ int main(void)
 				lcd_stringout("face: wrong");
 				lcd_moveto(30);
 				lcd_stringout("wrong");
-				play_track(5);	// access denied
+				play_track(3);	// access denied
 		}
 
 
@@ -319,7 +319,7 @@ int main(void)
 				pass_main_flag = 0;
 				touch_main_flag = 0;
 				rfid_main_flag = 0;
-				play_track(6);	// access granted
+				play_track(4);	// access granted
 		}
 		
 		lcd_moveto(64);	// row 2
