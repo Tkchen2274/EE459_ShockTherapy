@@ -18,6 +18,12 @@ volatile unsigned char touch_main_flag = 0;
 volatile unsigned char face_main_flag = 0;
 volatile unsigned char rfid_main_flag = 0;
 
+volatile unsigned char correct_auth = 0b0000;
+	//Keybad is MSb
+	//then face id
+	//then finger
+	//rfid is LSb
+
 
 
 // flags for which authentications need to be activated
@@ -86,6 +92,7 @@ ISR(USART_RX_vect) {
 						face_flag = 0;
 						byte_count = 0;
 						face_main_flag = 1;
+						correct_auth |= (1<<2);
 				}
 				else{	// valid data
 						facebuf[byte_count-1] = received_data;
@@ -100,6 +107,7 @@ ISR(USART_RX_vect) {
 						finger_done = 1;	// result done, and is valid.
 						face_flag = 1;
 						touch_main_flag = 1;
+						correct_auth |= (1<<1);
 				}
 				finger_flag = 0;
 				byte_count = 0;	// only one packet is received, so immediately terminate
@@ -112,6 +120,7 @@ ISR(USART_RX_vect) {
 						rfid_done = 1;	// result done, and is valid.
 						rfid_flag = 1;
 						rfid_main_flag = 1;
+						correct_auth |= (1<<0);
 				}
 				rfid_flag = 0;
 				byte_count = 0;	// only one packet is received, so immediately terminate

@@ -45,6 +45,10 @@ int main(void)
 	unsigned char pass[4] = {password/1000, (password/100)%10, (password/10)%10, password%10};	// array for holding password
     unsigned char lock_threshold = 3;	// CHANGE ME TO EEPROM
     unsigned char attempt[4];	// array for storing password attempt
+<<<<<<< HEAD
+	
+=======
+>>>>>>> 61ea190756f24b00129f60707a090304fc0152e0
 
 	unsigned char pass_main_flag = 0;	// flags for setting auth modes
 	
@@ -229,18 +233,19 @@ int main(void)
 				button_handled = 1;
 				lock_timeout = 0;
 				if (count == 4) {  // check attempt
-						unsigned char face_flag = 1;  // Assume true initially
+						unsigned char pass_flag = 1;  // Assume true initially
 						for (unsigned char i = 0; i < 4; i++) {
 								if (pass[i] != attempt[i]) {
-										face_flag = 0;  // Set to false on any mismatch
+										pass_flag = 0;  // Set to false on any mismatch
 										break;  // Exit the loop as no need to check further
 								}
 						}
 
 						lcd_moveto(30);
-						if (face_flag) {
+						if (pass_flag) {
 								pass_main_flag = 1;
 								lcd_stringout("right");
+								correct_auth |= (1<<3);
 						} 
 						else {
 								lcd_stringout("wrong");
@@ -323,7 +328,8 @@ int main(void)
 		}
 
 
-		else if((face_main_flag+pass_main_flag+touch_main_flag+rfid_main_flag)>=lock_threshold){
+		//else if((face_main_flag+pass_main_flag+touch_main_flag+rfid_main_flag)>=lock_threshold){
+		else if((enable_auth_flag & correct_auth) == enable_auth_flag){
 				lcd_moveto(20);
 				lcd_stringout("unlocked.");
 				OCR1A = 1600;	// unlocked
