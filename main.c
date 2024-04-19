@@ -45,10 +45,13 @@ int main(void)
 	unsigned char pass[4] = {password/1000, (password/100)%10, (password/10)%10, password%10};	// array for holding password
     unsigned char lock_threshold = 3;	// CHANGE ME TO EEPROM
     unsigned char attempt[4];	// array for storing password attempt
-<<<<<<< HEAD
+
+	unsigned char correct_auth = 0b0000;
+	//Keybad is MSb
+	//then face id
+	//then finger
+	//rfid is LSb
 	
-=======
->>>>>>> 61ea190756f24b00129f60707a090304fc0152e0
 
 	unsigned char pass_main_flag = 0;	// flags for setting auth modes
 	
@@ -271,12 +274,14 @@ int main(void)
 						lcd_stringout("face: ");
 						lcd_stringout(facebuf);
 						name_done = 0;
+						correct_auth |= (1<<2);
 				}
 		}
 		if(finger_done){
 				if(finger_done == 1){	// valid finger
 						lcd_moveto(99);
 						lcd_stringout("fin:v");
+						correct_auth |= (1<<1);
 						//increment counter
 				}
 				else if(finger_done == 2){	// invalid finger
@@ -289,6 +294,7 @@ int main(void)
 				if(rfid_done == 1){	// valid rfid
 						lcd_moveto(81);
 						lcd_stringout("r:v");
+						correct_auth |= (1<<0);
 						//increment counter
 				}
 				else if(rfid_done == 2){	// invalid rfid
@@ -328,8 +334,8 @@ int main(void)
 		}
 
 
-		//else if((face_main_flag+pass_main_flag+touch_main_flag+rfid_main_flag)>=lock_threshold){
-		else if((enable_auth_flag & correct_auth) == enable_auth_flag){
+		else if((face_main_flag+pass_main_flag+touch_main_flag+rfid_main_flag)>=lock_threshold){
+		//else if((enable_auth_flag & correct_auth) == enable_auth_flag){
 				lcd_moveto(20);
 				lcd_stringout("unlocked.");
 				OCR1A = 1600;	// unlocked
