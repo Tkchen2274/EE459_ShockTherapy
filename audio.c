@@ -6,7 +6,7 @@
 #include <util/delay.h>
 
 unsigned char num_tracks = 4; // UPDATEME with the current number of tracks present on the SD card
-unsigned char current_track = 4; //UPADTE ME starts with last track
+unsigned char current_track = 1; //UPADTE ME starts with last track
 
 void play_pause(void){
 	DDRD |= (1<<PLAY_PAUSE);	// Pull ADKEY1 down
@@ -18,7 +18,7 @@ void play_pause(void){
 void skip_track(void){
 	DDRD |= (1<<NEXT);	// Pull ADKEY1 down
 	PORTD &= ~(1<<NEXT);
-	_delay_ms(15);		//Short press for skipping track 10ms is like the minimum
+	_delay_ms(30);		//Short press for skipping track 10ms is like the minimum
 	DDRD &= ~(1<<NEXT);	//Switch to input again for not pressed	
 }
 

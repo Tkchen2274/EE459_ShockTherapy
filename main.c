@@ -23,6 +23,8 @@
 
 unsigned char status;
 void handle_button_press(char);
+void EEPROM_write(unsigned int, unsigned char);
+unsigned char EEPROM_read(unsigned int);
 volatile unsigned char pir_detected = 0;
 volatile unsigned char door_closed = 0;
 
@@ -34,18 +36,22 @@ int main(void)
 	unsigned char button_handled = 0;	// flag for keeping track of button presses
 	unsigned char touch_handled = 0; 	// flag for keeping track of detected touches
 	unsigned int lock_timeout = 0;
-	unsigned char pass[4] = {1, 2, 3, 4};	// array for holding password CHANGE ME TO EEPROM
+    EEPROM_write(1002, 1234 & 0xFF);
+	EEPROM_write(1001, 1234 >> 8);
+    unsigned char auth_byte = EEPROM_read(1000);	// EEPROM read of authentication byte
+    unsigned int password = EEPROM_read(1002);	// Least signficant 8 bits of password
+    password |= EEPROM_read(1001) << 8;	// Most signifcant 8 bits of password
+    
+	unsigned char pass[4] = {password/1000, (password/100)%10, (password/10)%10, password%10};	// array for holding password
     unsigned char lock_threshold = 3;	// CHANGE ME TO EEPROM
     unsigned char attempt[4];	// array for storing password attempt
-
-	
 
 	unsigned char pass_main_flag = 0;	// flags for setting auth modes
 	
 	analog_timer_init();	// Initializes analog polling
 	servo_init();
 	lcd_init();
-	adc_init();	// init adc for keypad
+	adc_init();		// init adc for keypad
     uart_init();	// init serial connection with rpi
 	sei();			//enables interrupts
 	
@@ -78,15 +84,22 @@ int main(void)
 	i2c_init(BDIV);
 	_delay_ms(100);	// Needs a delay so that the audio module can boot up
 	clear_screen();
-	play_track(1);
+	/*play_pause();
+	_delay_ms(200);
+	skip_track();
+	_delay_ms(200);
+	skip_track();
+	_delay_ms(200);
+	skip_track();
+	_delay_ms(200);
+	skip_track();
+	*/
 	_delay_ms(1);
 	lcd_stringout("Enter password:");
 	turn_on_cursor();
 
     lcd_moveto(20);
 	lcd_stringout("  locked.");
-
-
 	
 	unsigned char button;
 	unsigned char col1;
@@ -306,7 +319,7 @@ int main(void)
 				lcd_stringout("face: wrong");
 				lcd_moveto(30);
 				lcd_stringout("wrong");
-				play_track(3);	// access denied
+				play_track(2);	// access denied
 		}
 
 
@@ -324,7 +337,7 @@ int main(void)
 		
 		lcd_moveto(64);	// row 2
 		char buf[16];
-		sprintf(buf, "%3d %3d %3d t:%1d", col1, col2, col3, touched);
+		sprintf(buf, "%5d t:%1d", password, touched);
 		lcd_stringout(buf);
 		_delay_ms(5);
 		loop_count++;
@@ -338,6 +351,40 @@ void handle_button_press(char bit){	// Function to check for button press
 	while((PINB & (1 << bit)) == 0){	
 		_delay_ms(5);
 	}
+}
+
+// Function to write a byte to the EEPROM
+void EEPROM_write(unsigned int uiAddress, unsigned char ucData) {
+    /* Wait for completion of previous write */
+    while (EECR & (1 << EEPE));
+
+    /* Set Programming mode */
+    EECR = (0 << EEPM1) | (0 << EEPM0);
+
+    /* Set up address and data registers */
+    EEAR = uiAddress;
+    EEDR = ucData;
+
+    /* Write logical one to EEMPE */
+    EECR |= (1 << EEMPE);
+
+    /* Start eeprom write by setting EEPE */
+    EECR |= (1 << EEPE);
+}
+
+// Function to read a byte from the EEPROM
+unsigned char EEPROM_read(unsigned int uiAddress) {
+    /* Wait for completion of previous write if any */
+    while (EECR & (1 << EEPE));
+
+    /* Set up address register */
+    EEAR = uiAddress;
+
+    /* Start EEPROM read by writing EERE */
+    EECR |= (1 << EERE);
+
+    /* Return data from Data Register */
+    return EEDR;
 }
 
 // ISR for Reed switch:
