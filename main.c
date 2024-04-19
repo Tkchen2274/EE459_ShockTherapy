@@ -45,10 +45,6 @@ int main(void)
 	unsigned char pass[4] = {password/1000, (password/100)%10, (password/10)%10, password%10};	// array for holding password
     unsigned char lock_threshold = 3;	// CHANGE ME TO EEPROM
     unsigned char attempt[4];	// array for storing password attempt
-<<<<<<< HEAD
-	
-=======
->>>>>>> 61ea190756f24b00129f60707a090304fc0152e0
 
 	unsigned char pass_main_flag = 0;	// flags for setting auth modes
 	
@@ -152,6 +148,7 @@ int main(void)
 				uart_transmit(0x02);	// request finger verf. Remove later
 				handle_button_press(2);
 				lock_timeout = 0;
+				play_track(2);
 		}
 
 		//Only if pin_auth_flag = 1
@@ -289,7 +286,6 @@ int main(void)
 				if(rfid_done == 1){	// valid rfid
 						lcd_moveto(81);
 						lcd_stringout("r:v");
-						//increment counter
 				}
 				else if(rfid_done == 2){	// invalid rfid
 						lcd_moveto(81);
