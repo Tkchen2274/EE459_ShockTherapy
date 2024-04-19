@@ -6,7 +6,7 @@
 #include <util/delay.h>
 
 unsigned char num_tracks = 4; // UPDATEME with the current number of tracks present on the SD card
-unsigned char current_track = 1; //UPADTE ME starts with last track
+unsigned char current_track = 4; //UPADTE ME starts with last track
 
 void play_pause(void){
 	DDRD |= (1<<PLAY_PAUSE);	// Pull ADKEY1 down

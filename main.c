@@ -293,7 +293,7 @@ int main(void)
 				rfid_done = 0;
 		}
 		if(pir_detected && (lock_timeout > 200)){	// 50ms*200 = 10s timeout
-				play_track(2);	// hello there
+				play_track(3);	// hello there
 				//lock_timeout = 0;
 				pir_detected = 0;
 
