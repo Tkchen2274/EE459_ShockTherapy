@@ -42,7 +42,7 @@ int main(void)
     unsigned int password = EEPROM_read(1002);	// Least signficant 8 bits of password
     password |= EEPROM_read(1001) << 8;	// Most signifcant 8 bits of password
     
-	unsigned char pass[4] = {password/1000, (password/100)%10, (password/10)%10, password%10};	// array for holding password
+	pass[4] = {password/1000, (password/100)%10, (password/10)%10, password%10};	// array for holding password
     unsigned char lock_threshold = 3;	// CHANGE ME TO EEPROM
     unsigned char attempt[4];	// array for storing password attempt
 
@@ -91,16 +91,7 @@ int main(void)
 	i2c_init(BDIV);
 	_delay_ms(100);	// Needs a delay so that the audio module can boot up
 	clear_screen();
-	/*play_pause();
-	_delay_ms(200);
-	skip_track();
-	_delay_ms(200);
-	skip_track();
-	_delay_ms(200);
-	skip_track();
-	_delay_ms(200);
-	skip_track();
-	*/
+
 	_delay_ms(1);
 	lcd_stringout("Enter password:");
 	turn_on_cursor();
@@ -304,6 +295,12 @@ int main(void)
 				}
 				rfid_done = 0;
 		}
+		if(passwd_done){	// need to update password
+				pass = {passwd_buf/1000, (passwd_buf/100)%10, (passwd_buf/10)%10, passwd_buf%10};	// array for holding password
+				EEPROM_write(1002, passwd_buf & 0xFF);	// store in eeprom
+				EEPROM_write(1001, passwd_buf >> 8);
+				passd_done = 0;
+		}
 		if(pir_detected && (lock_timeout > 200)){	// 50ms*200 = 10s timeout
 				//play_track(1);	// hello there
 				//lock_timeout = 0;
@@ -313,7 +310,6 @@ int main(void)
 				//send packet to run python file for touch id
 				//uart_transmit(0x02);	// request finger verf
 		}
-
 
 		if((lock_timeout > 1000)){	// 5s timeout
 				_delay_ms(100);
@@ -334,7 +330,6 @@ int main(void)
 				play_track(3);	// access denied
 				OCR1A = 1000;	// locked
 		}
-
 
 		else if((face_main_flag+pass_main_flag+touch_main_flag+rfid_main_flag)>=lock_threshold){
 		//else if((enable_auth_flag & correct_auth) == enable_auth_flag){

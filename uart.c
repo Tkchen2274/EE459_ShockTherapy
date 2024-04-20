@@ -14,13 +14,12 @@ volatile unsigned char finger_flag = 0;
 volatile unsigned char finger_done = 0;
 volatile unsigned char rfid_flag = 0;
 volatile unsigned char rfid_done = 0;
+volatile unsigned char passwd_flag = 0;
+volatile unsigned char passwd_done = 0;
+volatile unsigned int passwd_buf = 0;	// buffer for storing 2 bytes of passwd
 volatile unsigned char touch_main_flag = 0;
 volatile unsigned char face_main_flag = 0;
 volatile unsigned char rfid_main_flag = 0;
-
-
-
-
 
 // flags for which authentications need to be activated
 volatile unsigned char enable_auth_flag = 0b0000;
@@ -75,6 +74,15 @@ ISR(USART_RX_vect) {
 				rfid_flag = 1;
 				byte_count++;
 		}
+		// 0x04 passwd 2 bytes
+		// 0x05 rpi sending selected auth 1 byte
+		// 0x06 rpi sending lock/unlock 1 byte
+		// 0x03 arduino to rpi request pic for doorbell
+		// 0x04 arduino to rpi request pic for intruder
+		else if((byte_count == 0)&&(received_data=0x04)){
+				passwd_flag = 1;
+				byte_count++;
+		}
 		else if(face_flag){	// receiving name
 				if(received_data == 0){	// invalid face
 						facebuf[0] = '\0';
@@ -121,5 +129,16 @@ ISR(USART_RX_vect) {
 				rfid_flag = 0;
 				byte_count = 0;	// only one packet is received, so immediately terminate
 		}
-		
+		else if(passwd_flag){
+				if(byte_count == 1){
+						passwd_buf = received_data << 8;
+				}
+				else if(byte_count == 2){	// last byte, so wrap up
+						passwd_buf |= received_data;
+
+						byte_count = 0;
+						passwd_flag = 0;
+						passwd_done = 1;
+				}
+		}
 }
