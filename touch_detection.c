@@ -4,6 +4,7 @@
 
 volatile char touched = 0;
 volatile unsigned int analogcount = 0;
+volatile unsigned char isrcount = 0;
 
 //void touch_pwm_init(void){ 	// output is on PB3
 //	DDRB |= (1<<3);
@@ -16,7 +17,7 @@ volatile unsigned int analogcount = 0;
 void analog_timer_init(void){  // timer for polling analog flag
 		// for polling
 		TCCR0A |= (0b10 << WGM00);	// CTC mode
-		TCCR0B |= (0b101 << CS00);	// prescalar 1024
+		TCCR0B |= (0b100 << CS00);	// prescalar 256
 		TIMSK0 |= (1 << OCIE0A);	// enable interrupts
 		OCR0A = 255;
 		//for generating interrupts
@@ -28,11 +29,18 @@ ISR(ANALOG_COMP_vect){	// Called when not touched
 }
 
 ISR(TIMER0_COMPA_vect){	// Have I been touched?
-		if(analogcount > 3000){	// no, i have not been touched alot
-				touched = 0;
+		if((isrcount % 12)==0){
+				ACSR |= (1 << ACIE);	
 		}
-		else{	// yes, i have been touched quite alot, therefore my count is low
-				touched = 1;
+		else if(((isrcount-1) % 12) == 0){
+				ACSR &= ~(1 << ACIE);
+				if(analogcount > 300){	// no, i have not been touched alot
+						touched = 0;
+				}
+				else{	// yes, i have been touched quite alot, therefore my count is low
+						touched = 1;
+				}
 		}
 		analogcount = 0;
+		isrcount++;
 }

@@ -127,12 +127,11 @@ int main(void)
 		total_auth_flag = face_auth_flag + touch_auth_flag + rfid_auth_flag + pin_auth_flag;
 		*/
 
-
 		if(touched && !touch_handled){
 			PORTC |= 1 << 0;	// indicate on red LED
 			PORTD |= 1 << 5;	// administer shock. Disable after demo.
-			// play_pause();	// change to siren sound and play for about 20 seconds
-			touch_handled = 1;	// this is to ensure the sound is only played once per touch. maybe change this so sound keeps playing
+		    play_track(2);	// change to siren sound and play for about 20 seconds
+			touch_handled = 1;	// this is to ensure the sound is only played once per touch. maybe change this so sound keeps playing	
 			//OCR1A = 1600;	// unlocked
 		}
 		else if(!touched){ 
@@ -143,9 +142,10 @@ int main(void)
 		}
 
 		if((PINB & (1<<7))==0){	//doorbell button pressed
-				play_track(1);	// ding dong
+				play_track(5);	// ding dong
 				handle_button_press(7);
 				//uart_transmit(0x01);	// request face recog. this would be different because needs to show image to user on website
+				OCR1A = 1600;	// unlocked
 		}
 
 
@@ -155,7 +155,7 @@ int main(void)
 				uart_transmit(0x02);	// request finger verf. Remove later
 				handle_button_press(2);
 				lock_timeout = 0;
-				play_track(2);
+				OCR1A = 1000;	// unlocked
 		}
 
 		//Only if pin_auth_flag = 1
@@ -305,7 +305,7 @@ int main(void)
 				rfid_done = 0;
 		}
 		if(pir_detected && (lock_timeout > 200)){	// 50ms*200 = 10s timeout
-				play_track(3);	// hello there
+				//play_track(1);	// hello there
 				//lock_timeout = 0;
 				pir_detected = 0;
 
@@ -315,8 +315,8 @@ int main(void)
 		}
 
 
-		if((lock_timeout > 200) && door_closed){	// 10s timeout
-				_delay_ms(5000);
+		if((lock_timeout > 1000)){	// 5s timeout
+				_delay_ms(100);
 				OCR1A = 1000;	// locked
 				lcd_moveto(20);
 				lcd_stringout("  locked.");
@@ -331,7 +331,8 @@ int main(void)
 				lcd_stringout("face: wrong");
 				lcd_moveto(30);
 				lcd_stringout("wrong");
-				play_track(2);	// access denied
+				play_track(3);	// access denied
+				OCR1A = 1000;	// locked
 		}
 
 
@@ -346,11 +347,12 @@ int main(void)
 				touch_main_flag = 0;
 				rfid_main_flag = 0;
 				play_track(4);	// access granted
+				OCR1A = 1600;	// unlocked
 		}
 		
 		lcd_moveto(64);	// row 2
 		char buf[16];
-		sprintf(buf, "%5d t:%1d", password, touched);
+		sprintf(buf, "%1d t:%1d", door_closed, touched);
 		lcd_stringout(buf);
 		_delay_ms(5);
 		loop_count++;
@@ -405,6 +407,9 @@ ISR(PCINT0_vect) {
     uint8_t currentState = PINB & (1 << PB0);
     if (currentState) {	// just became high
 		door_closed = 1;
+	}
+	else{	// just opened up
+		door_closed = 0;
 	}
 }
 
