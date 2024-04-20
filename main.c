@@ -47,6 +47,11 @@ int main(void)
     unsigned char attempt[4];	// array for storing password attempt
 
 	unsigned char correct_auth = 0b0000;
+
+	unsigned char keypad_tries = 0;
+	unsigned char face_tries = 0;
+	unsigned char touch_tries = 0;
+	unsigned char rfid_tries = 0;
 	//Keybad is MSb
 	//then face id
 	//then finger
@@ -119,6 +124,7 @@ int main(void)
 		*/
 
 		if(touched && !touch_handled){
+			uart_transmit(0x04); //take picture of intruder
 			PORTC |= 1 << 0;	// indicate on red LED
 			PORTD |= 1 << 5;	// administer shock. Disable after demo.
 		    play_track(2);	// change to siren sound and play for about 20 seconds
@@ -133,9 +139,9 @@ int main(void)
 		}
 
 		if((PINB & (1<<7))==0){	//doorbell button pressed
+				uart_transmit(0x03); //take picture of guest
 				play_track(5);	// ding dong
 				handle_button_press(7);
-				//uart_transmit(0x01);	// request face recog. this would be different because needs to show image to user on website
 				OCR1A = 1600;	// unlocked
 		}
 
@@ -244,6 +250,7 @@ int main(void)
 						} 
 						else {
 								lcd_stringout("wrong");
+								keypad_tries++;
 						}
 						count = 0;
 						lcd_moveto(15);	// clear pass
@@ -258,6 +265,8 @@ int main(void)
 				if(facebuf[0] == '\0'){
 						lcd_moveto(84);
 						lcd_stringout("face: wrong");
+						face_tries++;
+
 				}
 				else{
 						lcd_moveto(84);
@@ -274,11 +283,12 @@ int main(void)
 						lcd_moveto(99);
 						lcd_stringout("fin:v");
 						correct_auth |= (1<<1);
-						//increment counter
+						
 				}
 				else if(finger_done == 2){	// invalid finger
 						lcd_moveto(99);
 						lcd_stringout("fin:i");
+						touch_tries++;
 				}
 				finger_done = 0;
 		}
@@ -287,11 +297,13 @@ int main(void)
 						lcd_moveto(81);
 						lcd_stringout("r:v");
 						correct_auth |= (1<<0);
-						//increment counter
+						
 				}
 				else if(rfid_done == 2){	// invalid rfid
 						lcd_moveto(81);
 						lcd_stringout("r:i");
+						rfid_tries++;
+						
 				}
 				rfid_done = 0;
 		}
@@ -309,6 +321,20 @@ int main(void)
 				//if touch_auth_flag = 1
 				//send packet to run python file for touch id
 				//uart_transmit(0x02);	// request finger verf
+		}
+
+
+		if ((keypad_tries > 5) || (face_tries > 5) || (touch_tries > 5) || (rfid_tries > 5)){
+			uart_transmit(0x04); //take picture of intruder
+			for(int i; i < 5; i++){
+				play_track(3);
+				_delay_ms(200);
+			}
+			keypad_tries = 0;
+			face_tries = 0;
+			touch_tries = 0;
+			rfid_tries = 0;
+
 		}
 
 		if((lock_timeout > 1000)){	// 5s timeout
