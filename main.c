@@ -54,6 +54,7 @@ int main(void)
 	unsigned char face_tries = 0;
 	unsigned char touch_tries = 0;
 	unsigned char rfid_tries = 0;
+	unsigned char counter_tries = 0;
 	//Keybad is MSb
 	//then face id
 	//then finger
@@ -365,7 +366,8 @@ int main(void)
 		}
 
 
-		if ((keypad_tries > 5) || (face_tries > 5) || (touch_tries > 5) || (rfid_tries > 5)){
+		if (((keypad_tries > 5) + (face_tries > 5) + (touch_tries > 5) + (rfid_tries > 5)) > (lock_threshold%4)){
+	
 			uart_transmit(0x04); //take picture of intruder
 			for(int i; i < 5; i++){
 				play_track(3);
