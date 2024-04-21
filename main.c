@@ -49,6 +49,7 @@ int main(void)
     unsigned char attempt[4];	// array for storing password attempt
 
 	unsigned char correct_auth = 0;	// variable for storing attempted authentications
+    unsigned char auth_started = 0;	// flag for telling us that someone is trying to authenticate
 
 	unsigned char keypad_tries = 0;
 	unsigned char face_tries = 0;
@@ -153,6 +154,7 @@ int main(void)
 				handle_button_press(2);
 				lock_timeout = 0;
 				OCR1A = 1000;	// unlocked
+				auth_started = 1;
 		}
 
 		//Only if pin_auth_flag = 1
@@ -233,6 +235,7 @@ int main(void)
 				}
 				button_handled = 1;
 				lock_timeout = 0;
+				auth_started = 1;
 				if (count == 4) {  // check attempt
 						unsigned char pass_flag = 1;  // Assume true initially
 						for (unsigned char i = 0; i < 4; i++) {
@@ -264,7 +267,7 @@ int main(void)
 		if(name_done){	// face regonition result received
 				if(facebuf[0] == '\0'){
 						lcd_moveto(84);
-						lcd_stringout("face: wrong");
+						lcd_stringout("face: wrong    ");
 						face_tries++;
 
 				}
@@ -338,6 +341,7 @@ int main(void)
 				play_track(4);	// access granted
 				OCR1A = 1600;	// unlocked
 				lock_done = 0;
+				_delay_ms(3000);
 		}
 		if(addedtouch_done){
 				lcd_moveto(70);
@@ -380,8 +384,8 @@ int main(void)
 
 		}
 
-		if((lock_timeout > 1000)){	// 5s timeout
-				_delay_ms(100);
+		if((lock_timeout > 1000) & door_closed){	// 5s timeout
+				_delay_ms(1000);
 				OCR1A = 1000;	// locked
 				lcd_moveto(20);
 				lcd_stringout("  locked.");
@@ -395,6 +399,8 @@ int main(void)
 				lcd_stringout("wrong");
 				play_track(3);	// access denied
 				OCR1A = 1000;	// locked
+				door_closed = 0;
+				auth_started = 0;
 		}
 
 		else if((((correct_auth & 0x8)>>3)+((correct_auth & 0x4)>>2)+((correct_auth & 0x2)>>1)+(correct_auth & 0x1))>=lock_threshold){
@@ -413,7 +419,9 @@ int main(void)
 		lcd_stringout(buf);
 		_delay_ms(5);
 		loop_count++;
-		lock_timeout++;
+		if(auth_started){
+				lock_timeout++;
+		}
 	}
 	return 0;   /* never reached */
 }
