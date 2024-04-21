@@ -119,17 +119,15 @@ int main(void)
 		touch_auth_flag = //receive from rpi
 		rfid_auth_flag = //receive from rpi
 		pin_auth_flag = //receive from rpi
-
 		enable_auth_flag = //receive from rpi
-
 		total_auth_flag = face_auth_flag + touch_auth_flag + rfid_auth_flag + pin_auth_flag;
 		*/
 
 		if(touched && !touch_handled){
-			uart_transmit(0x04); //take picture of intruder
+			uart_transmit(0x04);	// take picture of intruder
 			PORTC |= 1 << 0;	// indicate on red LED
 			PORTD |= 1 << 5;	// administer shock. Disable after demo.
-		    play_track(2);	// change to siren sound and play for about 20 seconds
+		    play_track(2);		// change to siren sound and play for about 20 seconds
 			touch_handled = 1;	// this is to ensure the sound is only played once per touch. maybe change this so sound keeps playing	
 			//OCR1A = 1600;	// unlocked
 		}
@@ -146,7 +144,6 @@ int main(void)
 				handle_button_press(7);
 				OCR1A = 1600;	// unlocked
 		}
-
 
 		//Only if face_auth_flag = 1
 		if((PINB & (1<<2))==0){	//image capture button pressed
