@@ -15,6 +15,12 @@ extern volatile unsigned char rfid_flag;	// flag for telling us we are receiving
 extern volatile unsigned char rfid_done;	// flag for notifying main loop that face detection is done
 extern volatile unsigned char passwd_flag;	// flag for telling us we are receiving a finger result
 extern volatile unsigned char passwd_done;	// flag for notifying main loop that face detection is done
+extern volatile unsigned char lock_done;	// flag for unlocking via website
+extern volatile unsigned char lock_flag;
+extern volatile unsigned char auth_done;	// updating of authentication types
+extern volatile unsigned char auth_flag;
+extern volatile unsigned char addedtouch_done;
+extern volatile unsigned char addedrfid_done;
 extern volatile unsigned char touch_main_flag;	// flag for notifying main loop that touch succeded
 extern volatile unsigned char face_main_flag;	// flag for notifying main loop that face succeded
 extern volatile unsigned char rfid_main_flag;	// flag for notifying main loop that rfid succeded

@@ -42,11 +42,13 @@ int main(void)
     unsigned int password = EEPROM_read(1002);	// Least signficant 8 bits of password
     password |= EEPROM_read(1001) << 8;	// Most signifcant 8 bits of password
     
-	pass[4] = {password/1000, (password/100)%10, (password/10)%10, password%10};	// array for holding password
-    unsigned char lock_threshold = 3;	// CHANGE ME TO EEPROM
+	unsigned char pass[4] = {password/1000, (password/100)%10, (password/10)%10, password%10};	// array for holding password
+    
+    EEPROM_write(1003, 3);	// store threshold in EEPROM
+	unsigned char lock_threshold = EEPROM_read(1003);	// CHANGE ME TO EEPROM
     unsigned char attempt[4];	// array for storing password attempt
 
-	unsigned char correct_auth = 0b0000;
+	unsigned char correct_auth = 0;	// variable for storing attempted authentications
 
 	unsigned char keypad_tries = 0;
 	unsigned char face_tries = 0;
@@ -308,10 +310,52 @@ int main(void)
 				rfid_done = 0;
 		}
 		if(passwd_done){	// need to update password
-				pass = {passwd_buf/1000, (passwd_buf/100)%10, (passwd_buf/10)%10, passwd_buf%10};	// array for holding password
+				pass[0] = passwd_buf / 1000;
+				pass[1] = (passwd_buf / 100) % 10;
+				pass[2] = (passwd_buf / 10) % 10;
+				pass[3] = passwd_buf % 10;
 				EEPROM_write(1002, passwd_buf & 0xFF);	// store in eeprom
 				EEPROM_write(1001, passwd_buf >> 8);
-				passd_done = 0;
+				passwd_done = 0;
+				lcd_moveto(70);
+				lcd_stringout("pass updated");
+				_delay_ms(3000);
+				lcd_moveto(70);
+				lcd_stringout("            ");
+		}
+		if(auth_done){
+				EEPROM_write(1000, enable_auth_flag);
+				auth_done = 0;
+				lcd_moveto(70);
+				lcd_stringout("settings upd.");
+				_delay_ms(3000);
+				lcd_moveto(70);
+				lcd_stringout("             ");
+		}
+		if(lock_done){	// this means to unlock
+				lcd_moveto(20);
+				lcd_stringout("unlocked.");
+				lock_timeout = 0;
+				correct_auth = 0;
+				play_track(4);	// access granted
+				OCR1A = 1600;	// unlocked
+				lock_done = 0;
+		}
+		if(addedtouch_done){
+				lcd_moveto(70);
+				lcd_stringout("finger added");
+				_delay_ms(3000);
+				lcd_moveto(70);
+				lcd_stringout("            ");
+				addedtouch_done = 0;
+		}
+		if(addedrfid_done){
+				lcd_moveto(70);
+				lcd_stringout("rfid added");
+				_delay_ms(3000);
+				lcd_moveto(70);
+				lcd_stringout("          ");
+				addedrfid_done = 0;
 		}
 		if(pir_detected && (lock_timeout > 200)){	// 50ms*200 = 10s timeout
 				//play_track(1);	// hello there
@@ -328,7 +372,7 @@ int main(void)
 			uart_transmit(0x04); //take picture of intruder
 			for(int i; i < 5; i++){
 				play_track(3);
-				_delay_ms(200);
+				_delay_ms(2000);
 			}
 			keypad_tries = 0;
 			face_tries = 0;
@@ -343,10 +387,7 @@ int main(void)
 				lcd_moveto(20);
 				lcd_stringout("  locked.");
 				lock_timeout = 0;
-				face_main_flag = 0;
-				pass_main_flag = 0;
-				touch_main_flag = 0;
-				rfid_main_flag = 0;
+				correct_auth = 0;
 				lcd_moveto(99);
 				lcd_stringout("fin:i");
 				lcd_moveto(84);
@@ -357,18 +398,14 @@ int main(void)
 				OCR1A = 1000;	// locked
 		}
 
-		else if((face_main_flag+pass_main_flag+touch_main_flag+rfid_main_flag)>=lock_threshold){
+		else if((((correct_auth & 0x8)>>3)+((correct_auth & 0x4)>>2)+((correct_auth & 0x2)>>1)+(correct_auth & 0x1))>=lock_threshold){
 		//else if((enable_auth_flag & correct_auth) == enable_auth_flag){
 				lcd_moveto(20);
 				lcd_stringout("unlocked.");
-				OCR1A = 1600;	// unlocked
 				lock_timeout = 0;
-				face_main_flag = 0;
-				pass_main_flag = 0;
-				touch_main_flag = 0;
-				rfid_main_flag = 0;
 				play_track(4);	// access granted
 				OCR1A = 1600;	// unlocked
+				correct_auth = 0;
 		}
 		
 		lcd_moveto(64);	// row 2
