@@ -356,13 +356,12 @@ int main(void)
 				addedrfid_done = 0;
 		}
 		if(pir_detected && (lock_timeout > 200)){	// 50ms*200 = 10s timeout
-				//play_track(1);	// hello there
-				//lock_timeout = 0;
+				play_track(1);	// hello there
+				lock_timeout = 0;
 				pir_detected = 0;
 
-				//if touch_auth_flag = 1
 				//send packet to run python file for touch id
-				//uart_transmit(0x02);	// request finger verf
+				uart_transmit(0x02);	// request finger verf
 		}
 
 
