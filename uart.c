@@ -156,7 +156,6 @@ ISR(USART_RX_vect) {
 				}
 				else if(byte_count == 2){	// last byte, so wrap up
 						passwd_buf |= received_data;
-
 						byte_count = 0;
 						passwd_flag = 0;
 						passwd_done = 1;
@@ -170,7 +169,10 @@ ISR(USART_RX_vect) {
 		}
 		else if(lock_flag){
 				if(received_data){	// if received data is 1
-						lock_done = 1;	// notify main loop to unlock
+						lock_done = 2;	// notify main loop to unlock
+				}
+				else{
+					lock_done = 1;	// means deny
 				}
 				lock_flag = 0;
 				byte_count = 0;

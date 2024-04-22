@@ -18,7 +18,7 @@ void play_pause(void){
 void skip_track(void){
 	DDRD |= (1<<NEXT);	// Pull ADKEY1 down
 	PORTD &= ~(1<<NEXT);
-	_delay_ms(50);		//Short press for skipping track 10ms is like the minimum
+	_delay_ms(60);		//Short press for skipping track 10ms is like the minimum
 	DDRD &= ~(1<<NEXT);	//Switch to input again for not pressed	
 }
 

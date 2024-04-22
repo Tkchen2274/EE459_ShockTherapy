@@ -36,17 +36,21 @@ int main(void)
 	unsigned char button_handled = 0;	// flag for keeping track of button presses
 	unsigned char touch_handled = 0; 	// flag for keeping track of detected touches
 	unsigned int lock_timeout = 0;
-    EEPROM_write(1002, 1234 & 0xFF);
-	EEPROM_write(1001, 1234 >> 8);
+    //EEPROM_write(1002, 1234 & 0xFF);
+	//EEPROM_write(1001, 1234 >> 8);
     unsigned char auth_byte = EEPROM_read(1000);	// EEPROM read of authentication byte
     unsigned int password = EEPROM_read(1002);	// Least signficant 8 bits of password
-    password |= EEPROM_read(1001) << 8;	// Most signifcant 8 bits of password
+
+	password |= EEPROM_read(1001) << 8;	// Most signifcant 8 bits of password
     
 	unsigned char pass[4] = {password/1000, (password/100)%10, (password/10)%10, password%10};	// array for holding password
     
-    EEPROM_write(1003, 3);	// store threshold in EEPROM
+    //EEPROM_write(1003, 3);	// store threshold in EEPROM
 	unsigned char lock_threshold = EEPROM_read(1003);	// CHANGE ME TO EEPROM
-    unsigned char attempt[4];	// array for storing password attempt
+    if(lock_threshold == 0xFF){	// default eeprom value
+		lock_threshold = 3;	// default threshold
+	}
+	unsigned char attempt[4];	// array for storing password attempt
 
 	unsigned char correct_auth = 0;	// variable for storing attempted authentications
     unsigned char auth_started = 0;	// flag for telling us that someone is trying to authenticate
@@ -55,14 +59,18 @@ int main(void)
 	unsigned char face_tries = 0;
 	unsigned char touch_tries = 0;
 	unsigned char rfid_tries = 0;
-	unsigned char counter_tries = 0;
 	//Keybad is MSb
 	//then face id
 	//then finger
 	//rfid is LSb
+
+	unsigned char lock_flag = 1;
 	
 
 	unsigned char pass_main_flag = 0;	// flags for setting auth modes
+
+	unsigned int pir_timeout = 6001;
+
 	
 	analog_timer_init();	// Initializes analog polling
 	servo_init();
@@ -102,6 +110,7 @@ int main(void)
 	clear_screen();
 
 	_delay_ms(1);
+	lcd_moveto(0);
 	lcd_stringout("Enter password:");
 	turn_on_cursor();
 
@@ -116,35 +125,30 @@ int main(void)
 
 	while (1){
 
-		/*
-		face_auth_flag = //receive from rpi
-		touch_auth_flag = //receive from rpi
-		rfid_auth_flag = //receive from rpi
-		pin_auth_flag = //receive from rpi
-		enable_auth_flag = //receive from rpi
-		total_auth_flag = face_auth_flag + touch_auth_flag + rfid_auth_flag + pin_auth_flag;
-		*/
-
-		if(touched && !touch_handled){
+	
+		if(touched && !touch_handled && lock_flag){
 			uart_transmit(0x04);	// take picture of intruder
 			PORTC |= 1 << 0;	// indicate on red LED
-			PORTD |= 1 << 5;	// administer shock. Disable after demo.
+			//PORTD |= 1 << 5;	// administer shock. Disable after demo.
 		    play_track(2);		// change to siren sound and play for about 20 seconds
+			_delay_ms(11000);
 			touch_handled = 1;	// this is to ensure the sound is only played once per touch. maybe change this so sound keeps playing	
-			//OCR1A = 1600;	// unlocked
+			
+			
 		}
 		else if(!touched){ 
 			PORTC &= ~(1 << 0);	// Turn off the LED when no longer touching
 			PORTD &= ~(1 << 5);	// relieve shock
 			touch_handled = 0;
-			//OCR1A = 1000;	// locked
+			
 		}
 
 		if((PINB & (1<<7))==0){	//doorbell button pressed
 				uart_transmit(0x03); //take picture of guest
 				play_track(5);	// ding dong
 				handle_button_press(7);
-				OCR1A = 1600;	// unlocked
+				//OCR1A = 1600;	// unlocked
+				
 		}
 
 		//Only if face_auth_flag = 1
@@ -153,7 +157,7 @@ int main(void)
 				uart_transmit(0x02);	// request finger verf. Remove later
 				handle_button_press(2);
 				lock_timeout = 0;
-				OCR1A = 1000;	// unlocked
+				//OCR1A = 1000;	// unlocked
 				auth_started = 1;
 		}
 
@@ -248,11 +252,11 @@ int main(void)
 						lcd_moveto(30);
 						if (pass_flag) {
 								pass_main_flag = 1;
-								lcd_stringout("right");
+								lcd_stringout("pass:right");
 								correct_auth |= (1<<3);
 						} 
 						else {
-								lcd_stringout("wrong");
+								lcd_stringout("pass:wrong");
 								keypad_tries++;
 						}
 						count = 0;
@@ -279,6 +283,8 @@ int main(void)
 						lcd_stringout(facebuf);
 						name_done = 0;
 						correct_auth |= (1<<2);
+						face_tries = 0;
+					
 				}
 		}
 		if(finger_done){
@@ -286,6 +292,7 @@ int main(void)
 						lcd_moveto(99);
 						lcd_stringout("fin:v");
 						correct_auth |= (1<<1);
+						touch_tries = 0;
 						
 				}
 				else if(finger_done == 2){	// invalid finger
@@ -300,6 +307,7 @@ int main(void)
 						lcd_moveto(81);
 						lcd_stringout("r:v");
 						correct_auth |= (1<<0);
+						rfid_tries = 0;
 						
 				}
 				else if(rfid_done == 2){	// invalid rfid
@@ -318,22 +326,24 @@ int main(void)
 				EEPROM_write(1002, passwd_buf & 0xFF);	// store in eeprom
 				EEPROM_write(1001, passwd_buf >> 8);
 				passwd_done = 0;
-				lcd_moveto(70);
+				lcd_moveto(68);
 				lcd_stringout("pass updated");
 				_delay_ms(3000);
 				lcd_moveto(70);
 				lcd_stringout("            ");
 		}
 		if(auth_done){
-				EEPROM_write(1000, enable_auth_flag);
+				lock_threshold = enable_auth_flag;
+				EEPROM_write(1003, lock_threshold);	// store threshold in EEPROM
 				auth_done = 0;
-				lcd_moveto(70);
+				lcd_moveto(68);
 				lcd_stringout("settings upd.");
 				_delay_ms(3000);
 				lcd_moveto(70);
 				lcd_stringout("             ");
 		}
 		if(lock_done){	// this means to unlock
+			if(lock_done == 2){
 				lcd_moveto(20);
 				lcd_stringout("unlocked.");
 				lock_timeout = 0;
@@ -341,7 +351,16 @@ int main(void)
 				play_track(4);	// access granted
 				OCR1A = 1600;	// unlocked
 				lock_done = 0;
+				lock_flag = 0;
 				_delay_ms(3000);
+			}
+			else if(lock_done == 1){
+				play_track(3);	// access denied
+				lock_flag = 1;
+				lock_done = 0;
+				_delay_ms(3000);
+			}
+
 		}
 		if(addedtouch_done){
 				lcd_moveto(70);
@@ -359,23 +378,27 @@ int main(void)
 				lcd_stringout("          ");
 				addedrfid_done = 0;
 		}
-		if(pir_detected && (lock_timeout > 200)){	// 50ms*200 = 10s timeout
+		if(pir_detected){	// 50ms*200 = 10s timeout
+			if(pir_timeout > 4000){	// 20s of none movement
 				play_track(1);	// hello there
-				lock_timeout = 0;
 				pir_detected = 0;
-
 				//send packet to run python file for touch id
-				uart_transmit(0x02);	// request finger verf
+				//uart_transmit(0x02);	// request finger verf
+			}
+			pir_timeout = 0;	// the person has moved, so reset timer
 		}
 
 
-		if (((keypad_tries > 5) + (face_tries > 5) + (touch_tries > 5) + (rfid_tries > 5)) > (lock_threshold%4)){
-	
+		if (((keypad_tries > 3) + (face_tries > 1) + (touch_tries > 1) + (rfid_tries > 3)) > (4-lock_threshold)){
 			uart_transmit(0x04); //take picture of intruder
-			for(int i; i < 5; i++){
-				play_track(3);
-				_delay_ms(2000);
-			}
+			play_track(3);
+			_delay_ms(2500);
+			play_track(3);
+		    _delay_ms(2500);
+			play_track(3);
+			_delay_ms(2500);
+			
+
 			keypad_tries = 0;
 			face_tries = 0;
 			touch_tries = 0;
@@ -383,7 +406,7 @@ int main(void)
 
 		}
 
-		if((lock_timeout > 1000) & door_closed){	// 5s timeout
+		if((lock_timeout > 500) & door_closed){	// 5s timeout
 				_delay_ms(1000);
 				OCR1A = 1000;	// locked
 				lcd_moveto(20);
@@ -393,13 +416,13 @@ int main(void)
 				lcd_moveto(99);
 				lcd_stringout("fin:i");
 				lcd_moveto(84);
-				lcd_stringout("face: wrong");
+				lcd_stringout("face: wrong  ");
 				lcd_moveto(30);
-				lcd_stringout("wrong");
-				play_track(3);	// access denied
-				OCR1A = 1000;	// locked
-				door_closed = 0;
+				lcd_stringout("pass:wrong");
+				lcd_moveto(81);
+				lcd_stringout("r:i");
 				auth_started = 0;
+				lock_flag = 1;
 		}
 
 		else if((((correct_auth & 0x8)>>3)+((correct_auth & 0x4)>>2)+((correct_auth & 0x2)>>1)+(correct_auth & 0x1))>=lock_threshold){
@@ -410,16 +433,27 @@ int main(void)
 				play_track(4);	// access granted
 				OCR1A = 1600;	// unlocked
 				correct_auth = 0;
+				lock_flag = 0;
+				face_tries = 0;
+				touch_tries = 0;
+				rfid_tries = 0;
+				keypad_tries = 0;
 		}
 		
 		lcd_moveto(64);	// row 2
 		char buf[16];
-		sprintf(buf, "%1d t:%1d", door_closed, touched);
+		sprintf(buf, "%1d   #auth:%1d", door_closed, lock_threshold);
+		//sprintf(buf, "Auth levels:%1d", lock_threshold);
 		lcd_stringout(buf);
 		_delay_ms(5);
 		loop_count++;
 		if(auth_started){
 				lock_timeout++;
+		}
+		else{
+			if(pir_timeout < 7000){	// keep it within 7000
+				pir_timeout++;
+			}
 		}
 	}
 	return 0;   /* never reached */
