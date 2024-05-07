@@ -1,8 +1,8 @@
 DEVICE     = atmega328p
 CLOCK      = 7372800
 PROGRAMMER = -c usbtiny -P usb
-OBJECTS    = main.o touch_detection.o i2c.o lcd.o audio.o uart.o keypad.o servo.o
-SOURCES    = main.c touch_detection.c i2c.c lcd.c audio.c uart.c keypad.c servo.c
+OBJECTS    = main.o touch_detection.o i2c.o lcd.o audio.o uart.o servo.o keypad.o
+SOURCES    = main.c touch_detection.c i2c.c lcd.c audio.c uart.c servo.c keypad.c
 ASSEMBLY   = $(SOURCES:.c=.s)  # Replace .c with .s for assembly files
 FUSES      = -U hfuse:w:0xd9:m -U lfuse:w:0xe0:m
 
@@ -37,9 +37,8 @@ touch_detection.o: touch_detection.c touch_detection.h
 lcd.o: lcd.c lcd.h i2c.h
 i2c.o: i2c.c i2c.h
 audio.o: audio.c audio.h
-range_finder.o: range_finder.c range_finder.h
-rfid.o: rfid.c rfid.h
 keypad.o: keypad.c keypad.h
+range_finder.o: range_finder.c range_finder.h
 servo.o: servo.c servo.h
 uart.o: uart.c uart.h
 
