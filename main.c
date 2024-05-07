@@ -142,8 +142,7 @@ int main(void) {
         col2 = adc_sample(2);
         col3 = adc_sample(3);
 
-        if (col1 | col2 |
-            col3) { // If a button is pressed, the adc result will be non-zero
+        if (col1 | col2 | col3) { // If a button is pressed, the adc result will be non-zero
             if (!button_handled) { // If we haven't handled it already
                 lcd_moveto(15 + count); // prepare cursor on 3rd row
                 if (col1) {
@@ -355,8 +354,7 @@ int main(void) {
             pir_timeout = 0; // the person has moved, so reset timer
         }
 
-        if (((keypad_tries > 3) + (face_tries > 1) + (touch_tries > 1) +
-                (rfid_tries > 3)) > (4 - lock_threshold)) {
+        if (((keypad_tries > 3) + (face_tries > 1) + (touch_tries > 1) + (rfid_tries > 3)) > (4 - lock_threshold)) {
             uart_transmit(0x04); // take picture of intruder
             play_track(3);
             _delay_ms(2500);
