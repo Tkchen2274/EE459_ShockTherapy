@@ -45,7 +45,7 @@ int main(void) {
         password % 10
     }; // array for holding password
 
-    unsigned char lock_threshold = EEPROM_read(1003); // CHANGE ME TO EEPROM
+    unsigned char lock_threshold = EEPROM_read(1003); // read lock threshold
     if (lock_threshold == 0xFF) { // default eeprom value
         lock_threshold = 3; // default threshold
     }
