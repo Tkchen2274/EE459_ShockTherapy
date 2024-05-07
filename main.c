@@ -120,7 +120,7 @@ int main(void) {
     if (touched && !touch_handled && lock_flag) {
       uart_transmit(0x04); // take picture of intruder
       PORTC |= 1 << 0;     // indicate on red LED
-      PORTD |= 1 << 5;     // administer shock. Disable after demo.
+      //PORTD |= 1 << 5;     // administer shock. Disable after demo.
       play_track(2); // change to siren sound and play for about 20 seconds
       _delay_ms(11000);
       touch_handled = 1; // this is to ensure the sound is only played once per
